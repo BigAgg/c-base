@@ -1,0 +1,53 @@
+{
+	"folders":
+	[
+		{
+			"path": "include",
+			"follow_symlinks": true
+		},
+		{
+			"path": "src",
+			"follow_symlinks": true
+		}
+	],
+
+	"build_systems":
+	[
+		{
+			"name": "Build & Run Debug",
+			"working_dir": "${project_path}",
+			"cmd": ["make", "debug",
+					"&&",
+					"cd", "bin/debug/",
+					"&&",
+					"start", "main"],
+			"selector": "source.c++",
+			"shell": true
+		},
+		{
+			"name": "Build & Run Release",
+			"working_dir": "${project_path}",
+			"cmd": ["make", "release",
+					"&&",
+					"cd", "bin/release/",
+					"&&",
+					"start", "main"],
+			"selector": "source.c++",
+			"shell": true
+		},
+		{
+			"name": "Make Release",
+			"working_dir": "${project_path}",
+			"cmd": ["make", "release"],
+			"selector": "source.c++",
+			"shell": true
+		},
+		{
+			"name": "Make Debug",
+			"working_dir": "${project_path}",
+			"cmd": ["make", "debug"],
+			"selector": "source.c++",
+			"shell": true
+		}
+	]
+}
