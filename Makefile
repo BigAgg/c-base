@@ -14,45 +14,61 @@ RELEASEFLAGS_O := -std=$(CPP) -Wno-missing-braces -w -O3 -Wall -m64 $(INCLUDE_PA
 #defining paths
 OUTPATH_DEBUG := bin/debug/$(project_name)
 OUTPATH_RELEASE := bin/release/$(project_name)
-OBJDIR := obj/
+OBJDIR_R := obj/release/
+OBJDIR_D := obj/debug/
 
 # getting header files
-headers := $(notdir $(wildcard src/*.h) $(wildcard src/*/*.h) $(wildcard include/*.h) $(wildcard include/*/*.h))
+headers := $(wildcard src/*.h) $(wildcard src/*/*.h) $(wildcard include/*.h) $(wildcard include/*/*.h)
 # getting source files
 sources := $(wildcard src/*.cpp) $(wildcard src/*/*.cpp) $(wildcard include/*.cpp) $(wildcard include/*/*.cpp)
 # getting object files
-object_files := $(patsubst %.cpp,$(OBJDIR)%.o,$(notdir $(sources)))
+objects_r := $(patsubst %.cpp,$(OBJDIR_R)%.o,$(notdir $(sources)))
+objects_d := $(patsubst %.cpp,$(OBJDIR_D)%.o,$(notdir $(sources)))
 
 #setting vpath
 VPATH := $(sort $(dir $(sources)))
 
-print:
-	@echo $(INCLUDE_PATHS)
+.PHONY: clean rundebug runrelease clean_all clean_graphics rfolder dfolder
 
-debug: FLAGS := $(DEBUGFLAGS_O)
+rundebug: debug
+	cd bin/debug/ && .\${project_name}.exe
 
-release: FLAGS := $(RELEASEFLAGS_O)
+runrelease: release
+	cd bin/release/ && .\${project_name}.exe
 
-release: $(object_files)
-	@$(CC) obj/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
-	@xcopy graphics\\ bin\\release\\graphics\\ /s /Y
+release: rfolder $(objects_r) $(headers)
+	@$(CC) obj/release/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
+	-@xcopy graphics\\ bin\\release\\graphics\\ /s /YA
 
-debug: $(object_files)
-	@$(CC) obj/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
-	@xcopy graphics\\ bin\\debug\\graphics\\ /s /Y
+rfolder:
+	-@mkdir "obj/release/"
+	-@mkdir "bin/release/"
 
-$(OBJDIR)%.o: %.cpp
+debug: dfolder $(objects_d) $(headers)
+	@$(CC) obj/debug/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
+	-@xcopy graphics\\ bin\\debug\\graphics\\ /s /Y
+
+dfolder: 
+	-@mkdir "obj/debug/"
+	-@mkdir "bin/debug/"
+
+$(OBJDIR_R)%.o: %.cpp
 	@echo Compiling $< to $@
-	@$(CC) -c $< -o $@ $(FLAGS)
+	@$(CC) -c $< -o $@ $(RELEASEFLAGS_O)
+
+$(OBJDIR_D)%.o:%.cpp
+	@echo Compiling $< to $@
+	@$(CC) -c $< -o $@ $(DEBUGFLAGS_O)
 
 clean_all: clean clean_graphics
 
 clean:
 	@echo Cleaning Object files
-	@cd obj/ && del *.o
+	@cd obj/debug/ && del *.o
+	@cd obj/release/ && del *.o
 	@echo Cleaning Binaries
-	@cd bin/debug/ && del $(project_name).exe && del /q bin && del /S /Q graphics
-	@cd bin/release/ && del $(project_name).exe && del /q bin && del /S /Q graphics
+	@cd bin/debug/ && del $(project_name).exe
+	@cd bin/release/ && del $(project_name).exe
 
 clean_graphics:
 	@echo Cleaning Graphics
