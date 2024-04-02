@@ -12,6 +12,7 @@ DEBUGFLAGS_O := -std=$(CPP) -Wno-missing-braces -w -g -Wall -m64 $(INCLUDE_PATHS
 RELEASEFLAGS_O := -std=$(CPP) -Wno-missing-braces -w -O3 -Wall -m64 $(INCLUDE_PATHS)
 
 #defining paths
+DIRS := ./obj ./obj/release ./obj/debug ./bin ./bin/release ./bin/debug
 OUTPATH_DEBUG := bin/debug/$(project_name)
 OUTPATH_RELEASE := bin/release/$(project_name)
 OBJDIR_R := obj/release/
@@ -36,21 +37,15 @@ rundebug: debug
 runrelease: release
 	cd bin/release/ && .\${project_name}.exe
 
-release: rfolder $(objects_r) $(headers)
+release: | $(DIRS) $(objects_r) $(headers)
 	@$(CC) obj/release/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
-	-@xcopy graphics\\ bin\\release\\graphics\\ /s /YA
 
-rfolder:
-	-@mkdir "obj/release/"
-	-@mkdir "bin/release/"
-
-debug: dfolder $(objects_d) $(headers)
+debug: | $(DIRS) $(objects_d) $(headers)
 	@$(CC) obj/debug/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
-	-@xcopy graphics\\ bin\\debug\\graphics\\ /s /Y
 
-dfolder: 
-	-@mkdir "obj/debug/"
-	-@mkdir "bin/debug/"
+$(DIRS):
+	@echo "Folder $@ does not exist"
+	mkdir "$@"
 
 $(OBJDIR_R)%.o: %.cpp
 	@echo Compiling $< to $@
@@ -60,17 +55,9 @@ $(OBJDIR_D)%.o:%.cpp
 	@echo Compiling $< to $@
 	@$(CC) -c $< -o $@ $(DEBUGFLAGS_O)
 
-clean_all: clean clean_graphics
-
 clean:
 	@echo Cleaning Object files
-	@cd obj/debug/ && del *.o
-	@cd obj/release/ && del *.o
+	-@rmdir /s /q obj
 	@echo Cleaning Binaries
-	@cd bin/debug/ && del $(project_name).exe
-	@cd bin/release/ && del $(project_name).exe
+	-@rmdir /s /q bin
 
-clean_graphics:
-	@echo Cleaning Graphics
-	@cd bin/debug/ && del /S /Q graphics
-	@cd bin/release/ && del /S /Q graphics
