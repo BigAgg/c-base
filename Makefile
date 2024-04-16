@@ -18,8 +18,6 @@ OUTPATH_RELEASE := bin/release/$(project_name)
 OBJDIR_R := obj/release/
 OBJDIR_D := obj/debug/
 
-# getting header files
-headers := $(wildcard src/*.h) $(wildcard src/*/*.h) $(wildcard include/*.h) $(wildcard include/*/*.h)
 # getting source files
 sources := $(wildcard src/*.cpp) $(wildcard src/*/*.cpp) $(wildcard include/*.cpp) $(wildcard include/*/*.cpp)
 # getting object files
@@ -28,6 +26,8 @@ objects_d := $(patsubst %.cpp,$(OBJDIR_D)%.o,$(notdir $(sources)))
 
 #setting vpath
 VPATH := $(sort $(dir $(sources)))
+
+-include $(wildcard $(OBJDIR_D)*.d) $(wildcard $(OBJDIR_R)*.d)
 
 .PHONY: clean rundebug runrelease clean_all clean_graphics rfolder dfolder
 
@@ -38,22 +38,22 @@ runrelease: release
 	cd bin/release/ && .\${project_name}.exe
 
 release: | $(DIRS) $(objects_r) $(headers)
-	@$(CC) obj/release/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
+	@$(CC) -MMD -MP obj/release/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
 
 debug: | $(DIRS) $(objects_d) $(headers)
-	@$(CC) obj/debug/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
+	@$(CC) -MMD -MP obj/debug/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
 
 $(DIRS):
 	@echo "Folder $@ does not exist"
-	mkdir "$@"
+	@mkdir "$@"
 
 $(OBJDIR_R)%.o: %.cpp
 	@echo Compiling $< to $@
-	@$(CC) -c $< -o $@ $(RELEASEFLAGS_O)
+	@$(CC) $(RELEASEFLAGS_O) -c $< -o $@
 
-$(OBJDIR_D)%.o:%.cpp
+$(OBJDIR_D)%.o: %.cpp
 	@echo Compiling $< to $@
-	@$(CC) -c $< -o $@ $(DEBUGFLAGS_O)
+	@$(CC) $(DEBUGFLAGS_O) -c $< -o $@
 
 clean:
 	@echo Cleaning Object files
