@@ -38,10 +38,10 @@ runrelease: release
 	cd bin/release/ && .\${project_name}.exe
 
 release: | $(DIRS) $(objects_r) $(headers)
-	@$(CC) -MMD -MP obj/release/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
+	@$(CC) obj/release/*.o -o $(OUTPATH_RELEASE) -s -L lib/ $(LIBS)
 
 debug: | $(DIRS) $(objects_d) $(headers)
-	@$(CC) -MMD -MP obj/debug/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
+	@$(CC) obj/debug/*.o -o $(OUTPATH_DEBUG) -L lib/ $(LIBS)
 
 $(DIRS):
 	@echo "Folder $@ does not exist"
@@ -49,11 +49,11 @@ $(DIRS):
 
 $(OBJDIR_R)%.o: %.cpp
 	@echo Compiling $< to $@
-	@$(CC) $(RELEASEFLAGS_O) -c $< -o $@
+	@$(CC) $(RELEASEFLAGS_O) -MMD -MP -c $< -o $@
 
 $(OBJDIR_D)%.o: %.cpp
 	@echo Compiling $< to $@
-	@$(CC) $(DEBUGFLAGS_O) -c $< -o $@
+	@$(CC) $(DEBUGFLAGS_O) -MMD -MP -c $< -o $@
 
 clean:
 	@echo Cleaning Object files
